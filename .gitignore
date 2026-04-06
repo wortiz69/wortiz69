@@ -1,4 +1,4 @@
 node_modules/
-out/
+# out/  # uncomment to ignore rendered output
 dist/
 .remotion/

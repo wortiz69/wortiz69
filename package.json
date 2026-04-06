@@ -4,8 +4,8 @@
   "description": "A Remotion video to help shelter dogs find homes",
   "scripts": {
     "start": "npx remotion studio",
-    "build": "npx remotion render ShelterDogs out/shelter-dogs.mp4",
-    "render": "npx remotion render ShelterDogs out/shelter-dogs.mp4"
+    "build": "npx remotion render ShelterDogs out/shelter-dogs.mp4 --browser-executable=/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell --ffmpeg-executable=/opt/pw-browsers/ffmpeg-1011/ffmpeg-linux",
+    "render": "npx remotion render ShelterDogs out/shelter-dogs.mp4 --browser-executable=/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell --ffmpeg-executable=/opt/pw-browsers/ffmpeg-1011/ffmpeg-linux"
   },
   "dependencies": {
     "@remotion/cli": "4.0.445",
