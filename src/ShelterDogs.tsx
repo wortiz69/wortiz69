@@ -321,7 +321,7 @@ const SceneHelp: React.FC = () => {
   );
 };
 
-// ─── Scene 4: CTA (270–300f) ─────────────────────────────────────────────────
+// ─── Scene 4: CTA (270–360f) ─────────────────────────────────────────────────
 const SceneCTA: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -419,7 +419,7 @@ export const ShelterDogs: React.FC = () => {
       <Sequence from={180} durationInFrames={90}>
         <SceneHelp />
       </Sequence>
-      <Sequence from={270} durationInFrames={30}>
+      <Sequence from={270} durationInFrames={90}>
         <SceneCTA />
       </Sequence>
     </AbsoluteFill>
