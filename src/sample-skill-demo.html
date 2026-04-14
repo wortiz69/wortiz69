@@ -73,10 +73,12 @@
 
     /*
       SKILL RULE: duration-timing (Priority 6 - Animation)
-      Use 150-300ms for micro-interactions, transform/opacity only
+      Use 150-300ms for micro-interactions, transform/opacity only.
+      SKILL RULE: easing-functions — ease-out for entering, ease-in for exiting.
+      Never use linear for UI transitions (feels robotic).
     */
     .card-hover {
-      transition: box-shadow 200ms ease, transform 200ms ease;
+      transition: box-shadow 200ms ease-out, transform 200ms ease-out;
     }
     .card-hover:hover {
       box-shadow: 0 8px 24px rgba(30, 64, 175, 0.15);
@@ -85,10 +87,12 @@
 
     /*
       SKILL RULE: hover-vs-tap — row highlighting on hover (web only)
+      SKILL RULE: easing-functions — ease-out for smooth entering state
+      SKILL RULE: continuous-animation — no decorative infinite animations here
     */
     .table-row-hover:hover {
       background-color: #EFF6FF;
-      transition: background-color 150ms ease;
+      transition: background-color 150ms ease-out;
     }
   </style>
 </head>
@@ -364,7 +368,7 @@
           <div>
             <p class="font-semibold text-gray-800">Supplement with domain searches</p>
             <code class="block mt-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-600 font-mono">
-              python3 ... "animation accessibility hover" --domain ux<br>
+              python3 ... "animation accessibility" --domain ux<br>
               python3 ... "layout responsive" --stack html-tailwind
             </code>
           </div>
