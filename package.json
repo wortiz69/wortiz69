@@ -5,7 +5,10 @@
   "scripts": {
     "start": "npx remotion studio",
     "build": "npx remotion render ShelterDogs out/shelter-dogs.mp4 --browser-executable=/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell --ffmpeg-executable=/opt/pw-browsers/ffmpeg-1011/ffmpeg-linux",
-    "render": "npx remotion render ShelterDogs out/shelter-dogs.mp4 --browser-executable=/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell --ffmpeg-executable=/opt/pw-browsers/ffmpeg-1011/ffmpeg-linux"
+    "render": "npx remotion render ShelterDogs out/shelter-dogs.mp4 --browser-executable=/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell --ffmpeg-executable=/opt/pw-browsers/ffmpeg-1011/ffmpeg-linux",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@remotion/cli": "4.0.445",
@@ -15,8 +18,13 @@
     "remotion": "4.0.445"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^18.0.0",
-    "typescript": "^5.0.0"
+    "@vitejs/plugin-react": "^6.0.1",
+    "jsdom": "^29.0.2",
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.4"
   },
   "remotion": {
     "entryPoint": "src/index.ts"
