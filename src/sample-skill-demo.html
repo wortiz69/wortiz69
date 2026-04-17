@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!--
+    SKILL RULE: viewport-meta (Priority 4 - Layout & Responsive)
+    Always include width=device-width, initial-scale=1
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow — SaaS Dashboard Demo</title>
+
+  <!--
+    SKILL STEP 1: ANALYZE REQUIREMENTS
+    Product type : SaaS productivity analytics
+    Industry     : B2B / Tech
+    Style        : Data-Dense Dashboard
+    Stack        : html-tailwind (default)
+
+    SKILL STEP 2: GENERATE DESIGN SYSTEM
+    Command used:
+      python3 .claude/skills/ui-ux-pro-max/scripts/search.py \
+        "SaaS productivity dashboard analytics" --design-system -p "TaskFlow"
+
+    Results applied below:
+      Colors      → Primary #1E40AF · Secondary #3B82F6 · CTA #F59E0B · BG #F8FAFC · Text #1E3A8A
+      Typography  → Fira Code (headings/data) + Fira Sans (body)
+      Style       → Data-Dense Dashboard: KPI cards, grid layout, minimal padding
+      Effects     → Hover row highlighting, smooth filter animations (150-300ms)
+      Anti-patterns avoided → No ornate decorations, filtering always present
+  -->
+
+  <!-- SKILL: Google Fonts from typography result -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          /* SKILL: Design system colors applied as Tailwind tokens */
+          colors: {
+            primary:   '#1E40AF',
+            secondary: '#3B82F6',
+            cta:       '#F59E0B',
+            surface:   '#F8FAFC',
+            textbase:  '#1E3A8A',
+          },
+          fontFamily: {
+            heading: ['"Fira Code"', 'monospace'],
+            body:    ['"Fira Sans"', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /*
+      SKILL RULE: reduced-motion (Priority 3 - Performance)
+      Always respect prefers-reduced-motion
+    */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    body { font-family: 'Fira Sans', sans-serif; }
+    .font-heading { font-family: 'Fira Code', monospace; }
+
+    /*
+      SKILL RULE: duration-timing (Priority 6 - Animation)
+      Use 150-300ms for micro-interactions, transform/opacity only.
+      SKILL RULE: easing-functions — ease-out for entering, ease-in for exiting.
+      Never use linear for UI transitions (feels robotic).
+    */
+    .card-hover {
+      transition: box-shadow 200ms ease-out, transform 200ms ease-out;
+    }
+    .card-hover:hover {
+      box-shadow: 0 8px 24px rgba(30, 64, 175, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /*
+      SKILL RULE: hover-vs-tap — row highlighting on hover (web only)
+      SKILL RULE: easing-functions — ease-out for smooth entering state
+      SKILL RULE: continuous-animation — no decorative infinite animations here
+    */
+    .table-row-hover:hover {
+      background-color: #EFF6FF;
+      transition: background-color 150ms ease-out;
+    }
+  </style>
+</head>
+
+<!--
+  SKILL RULE: color contrast (Priority 1 - Accessibility)
+  Background #F8FAFC + text #1E3A8A → contrast ratio > 7:1 ✓
+-->
+<body class="bg-surface text-textbase font-body min-h-screen">
+
+  <!-- =====================================================================
+       FLOATING NAVBAR
+       SKILL RULE: floating-navbar → top-4 left-4 right-4 spacing (not top-0)
+       ===================================================================== -->
+  <nav class="fixed top-4 left-4 right-4 z-50 bg-white/90 backdrop-blur-md
+              border border-gray-200 rounded-2xl px-6 py-3
+              flex items-center justify-between shadow-sm">
+
+    <!-- Brand -->
+    <div class="flex items-center gap-2">
+      <!--
+        SKILL RULE: no-emoji-icons → use SVG (Heroicons), never 🚀 📊 etc.
+      -->
+      <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504
+             1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125
+             1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125
+             1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0
+             .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0
+             01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125
+             1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0
+             .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0
+             01-1.125-1.125V4.125z" />
+      </svg>
+      <span class="font-heading font-semibold text-primary text-lg">TaskFlow</span>
+    </div>
+
+    <!-- Nav links — hidden on mobile, shown md+ (SKILL: hidden md:flex) -->
+    <ul class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+      <li><a href="#" class="hover:text-primary transition-colors duration-200 cursor-pointer">Dashboard</a></li>
+      <li><a href="#" class="hover:text-primary transition-colors duration-200 cursor-pointer">Reports</a></li>
+      <li><a href="#" class="hover:text-primary transition-colors duration-200 cursor-pointer">Team</a></li>
+    </ul>
+
+    <!--
+      SKILL: CTA color #F59E0B (amber) from design system
+      SKILL RULE: touch-target-size → min 44x44px (py-2.5 px-4 = ~44px height)
+      SKILL RULE: cursor-pointer on all clickable elements
+      SKILL RULE: focus-states → focus:ring for keyboard nav accessibility
+    -->
+    <button
+      class="bg-cta text-white text-sm font-semibold px-4 py-2.5 rounded-xl
+             hover:bg-amber-500 transition-colors duration-200 cursor-pointer
+             focus:outline-none focus:ring-2 focus:ring-cta focus:ring-offset-2"
+      aria-label="Upgrade to Pro plan">
+      Upgrade to Pro
+    </button>
+  </nav>
+
+  <!-- =====================================================================
+       MAIN CONTENT — padded to clear floating navbar
+       ===================================================================== -->
+  <main class="pt-24 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto pb-12">
+
+    <!-- Page header -->
+    <div class="mb-8">
+      <h1 class="font-heading text-2xl font-bold text-primary">Analytics Overview</h1>
+      <p class="text-gray-500 text-sm mt-1">Last updated: April 12, 2026 · All metrics are real-time</p>
+    </div>
+
+    <!-- =================================================================
+         KPI CARDS (Data-Dense Dashboard style)
+         SKILL: KPI cards with grid layout, space-efficient, max data visibility
+         ================================================================= -->
+    <section aria-label="Key performance indicators"
+             class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+
+      <!-- Card 1 -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-5 card-hover cursor-pointer"
+           role="button" tabindex="0" aria-label="Total users: 24,839">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Users</span>
+          <!-- SVG icon (Heroicons) — SKILL: no-emoji-icons -->
+          <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0
+                 004.121-.952 4.125 4.125 0 00-7.533-2.493M15
+                 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15
+                 19.128v.106A12.318 12.318 0 018.624 21c-2.331
+                 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375
+                 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75
+                 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625
+                 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+          </svg>
+        </div>
+        <p class="font-heading text-2xl font-bold text-primary">24,839</p>
+        <p class="text-xs text-green-600 font-medium mt-1">+12.4% this month</p>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-5 card-hover cursor-pointer"
+           role="button" tabindex="0" aria-label="Monthly revenue: $48,200">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</span>
+          <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879
+                 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536
+                 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303
+                 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p class="font-heading text-2xl font-bold text-primary">$48,200</p>
+        <p class="text-xs text-green-600 font-medium mt-1">+8.1% vs last month</p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-5 card-hover cursor-pointer"
+           role="button" tabindex="0" aria-label="Churn rate: 2.3%">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Churn Rate</span>
+          <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M2.25 6L9 12.75l4.286-4.286a11.948 11.948 0
+                 014.306 6.43l.776 2.898m0 0l3.182-5.511m-3.182
+                 5.511l-5.511-3.182" />
+          </svg>
+        </div>
+        <p class="font-heading text-2xl font-bold text-primary">2.3%</p>
+        <p class="text-xs text-red-500 font-medium mt-1">+0.4% vs last month</p>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-5 card-hover cursor-pointer"
+           role="button" tabindex="0" aria-label="Active tasks: 1,047">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Active Tasks</span>
+          <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p class="font-heading text-2xl font-bold text-primary">1,047</p>
+        <p class="text-xs text-gray-400 font-medium mt-1">Across 38 workspaces</p>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         DATA TABLE
+         SKILL: row highlighting on hover (Data-Dense Dashboard effect)
+         SKILL RULE: data-table → provide table for accessibility
+         ================================================================= -->
+    <section class="bg-white rounded-2xl border border-gray-200 overflow-hidden mb-8">
+
+      <!-- Table header with filter -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 border-b border-gray-100">
+        <h2 class="font-heading font-semibold text-base text-primary">Recent Signups</h2>
+
+        <!--
+          SKILL: Filtering always present (anti-pattern avoided: "No filtering")
+          SKILL RULE: aria-label on icon-only controls
+        -->
+        <div class="flex items-center gap-2">
+          <label for="plan-filter" class="text-xs text-gray-500 font-medium">Plan:</label>
+          <select id="plan-filter"
+                  class="text-sm border border-gray-200 rounded-lg px-3 py-1.5
+                         focus:outline-none focus:ring-2 focus:ring-secondary
+                         cursor-pointer transition-colors duration-150">
+            <option>All</option>
+            <option>Free</option>
+            <option>Pro</option>
+            <option>Enterprise</option>
+          </select>
+        </div>
+      </div>
+
+      <!--
+        SKILL RULE: horizontal-scroll → overflow-x-auto prevents layout break on mobile
+      -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm" aria-label="Recent user signups">
+          <thead>
+            <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
+              <th class="text-left px-6 py-3 font-semibold">User</th>
+              <th class="text-left px-6 py-3 font-semibold">Plan</th>
+              <th class="text-left px-6 py-3 font-semibold">Joined</th>
+              <th class="text-left px-6 py-3 font-semibold">Tasks</th>
+              <th class="text-left px-6 py-3 font-semibold">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <!-- SKILL: table-row-hover — row highlight on hover -->
+            <tr class="table-row-hover cursor-pointer">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs" aria-hidden="true">AL</div>
+                  <div>
+                    <p class="font-medium text-gray-800">Alice Lambert</p>
+                    <p class="text-xs text-gray-400">alice@example.com</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4"><span class="bg-amber-100 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded-full">Pro</span></td>
+              <td class="px-6 py-4 text-gray-500">Apr 10, 2026</td>
+              <td class="px-6 py-4 font-heading font-medium text-primary">142</td>
+              <td class="px-6 py-4"><span class="flex items-center gap-1.5 text-green-600 text-xs font-medium"><span class="w-1.5 h-1.5 rounded-full bg-green-500" aria-hidden="true"></span>Active</span></td>
+            </tr>
+            <tr class="table-row-hover cursor-pointer">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-semibold text-xs" aria-hidden="true">MR</div>
+                  <div>
+                    <p class="font-medium text-gray-800">Marco Reyes</p>
+                    <p class="text-xs text-gray-400">marco@example.com</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4"><span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2 py-0.5 rounded-full">Free</span></td>
+              <td class="px-6 py-4 text-gray-500">Apr 9, 2026</td>
+              <td class="px-6 py-4 font-heading font-medium text-primary">38</td>
+              <td class="px-6 py-4"><span class="flex items-center gap-1.5 text-green-600 text-xs font-medium"><span class="w-1.5 h-1.5 rounded-full bg-green-500" aria-hidden="true"></span>Active</span></td>
+            </tr>
+            <tr class="table-row-hover cursor-pointer">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs" aria-hidden="true">SN</div>
+                  <div>
+                    <p class="font-medium text-gray-800">Soo-Jin Nam</p>
+                    <p class="text-xs text-gray-400">soojin@example.com</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4"><span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">Enterprise</span></td>
+              <td class="px-6 py-4 text-gray-500">Apr 8, 2026</td>
+              <td class="px-6 py-4 font-heading font-medium text-primary">504</td>
+              <td class="px-6 py-4"><span class="flex items-center gap-1.5 text-yellow-600 text-xs font-medium"><span class="w-1.5 h-1.5 rounded-full bg-yellow-400" aria-hidden="true"></span>Trial</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         SKILL USAGE GUIDE (inline tutorial)
+         ================================================================= -->
+    <section class="bg-primary/5 border border-primary/20 rounded-2xl p-6">
+      <h2 class="font-heading font-bold text-primary text-base mb-4">
+        How This Page Was Built with the Skill
+      </h2>
+
+      <ol class="space-y-4 text-sm text-gray-700">
+        <li class="flex gap-3">
+          <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">1</span>
+          <div>
+            <p class="font-semibold text-gray-800">Analyze requirements</p>
+            <p class="text-gray-500 mt-0.5">Identified: SaaS · analytics dashboard · B2B · html-tailwind stack</p>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">2</span>
+          <div>
+            <p class="font-semibold text-gray-800">Generate design system</p>
+            <code class="block mt-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-600 font-mono">
+              python3 .claude/skills/ui-ux-pro-max/scripts/search.py \<br>
+              &nbsp;&nbsp;"SaaS productivity dashboard analytics" \<br>
+              &nbsp;&nbsp;--design-system -p "TaskFlow"
+            </code>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">3</span>
+          <div>
+            <p class="font-semibold text-gray-800">Supplement with domain searches</p>
+            <code class="block mt-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-600 font-mono">
+              python3 ... "animation accessibility" --domain ux<br>
+              python3 ... "layout responsive" --stack html-tailwind
+            </code>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">4</span>
+          <div>
+            <p class="font-semibold text-gray-800">Apply all rules to code</p>
+            <p class="text-gray-500 mt-0.5">Colors, fonts, hover states, accessibility, SVG icons, responsive padding — all from skill output.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+  </main>
+
+</body>
+</html>
