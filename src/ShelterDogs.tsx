@@ -7,6 +7,7 @@ import {
   useVideoConfig,
   Sequence,
 } from "remotion";
+import { useFadeIn, useSlideUp, computePawPositions } from "./animations";
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 const WARM_BROWN = "#8B4513";
@@ -15,25 +16,6 @@ const AMBER = "#F5A623";
 const DARK = "#1A1A1A";
 const WHITE = "#FFFFFF";
 const SOFT_RED = "#E74C3C";
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-const useFadeIn = (start: number, duration = 20) => {
-  const frame = useCurrentFrame();
-  return interpolate(frame - start, [0, duration], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-};
-
-const useSlideUp = (start: number, fps: number) => {
-  const frame = useCurrentFrame();
-  const progress = spring({
-    frame: frame - start,
-    fps,
-    config: { damping: 12, stiffness: 80 },
-  });
-  return interpolate(progress, [0, 1], [60, 0]);
-};
 
 // ─── Dog Paw SVG ─────────────────────────────────────────────────────────────
 const PawPrint: React.FC<{ size?: number; color?: string; opacity?: number }> =
@@ -52,14 +34,7 @@ const PawPrint: React.FC<{ size?: number; color?: string; opacity?: number }> =
 // ─── Floating Paws Background ────────────────────────────────────────────────
 const FloatingPaws: React.FC<{ count?: number }> = ({ count = 8 }) => {
   const frame = useCurrentFrame();
-  const paws = Array.from({ length: count }, (_, i) => {
-    const x = (i * 137 + 20) % 100;
-    const baseY = (i * 83 + 10) % 100;
-    const y = ((baseY + frame * (0.05 + i * 0.01)) % 100);
-    const size = 30 + (i % 3) * 15;
-    const rotation = (frame * (i % 2 === 0 ? 0.3 : -0.3) + i * 45) % 360;
-    return { x, y, size, rotation, i };
-  });
+  const paws = computePawPositions(count, frame);
 
   return (
     <>
@@ -181,7 +156,7 @@ const SceneHook: React.FC = () => {
 };
 
 // ─── Scene 2: Stats (90–180f) ────────────────────────────────────────────────
-const StatCard: React.FC<{
+export const StatCard: React.FC<{
   number: string;
   label: string;
   delay: number;
@@ -253,7 +228,7 @@ const SceneStats: React.FC = () => {
 };
 
 // ─── Scene 3: How to Help (180–270f) ─────────────────────────────────────────
-const Step: React.FC<{ icon: string; text: string; delay: number }> = ({ icon, text, delay }) => {
+export const Step: React.FC<{ icon: string; text: string; delay: number }> = ({ icon, text, delay }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const x = spring({ frame: frame - delay, fps, config: { damping: 12, stiffness: 70 } });
