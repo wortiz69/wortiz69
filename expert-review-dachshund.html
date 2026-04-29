@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Expert Design Review — Dachshund Animation</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0c0c14;color:#e8e4ff;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;min-height:100vh;padding:48px 24px;display:flex;justify-content:center}
+.container{max-width:780px;width:100%}
+
+.review-header{margin-bottom:48px}
+.badge{display:inline-block;font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:#9b8dff;border:1px solid rgba(155,141,255,.25);padding:4px 12px;border-radius:20px;margin-bottom:16px}
+h1{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:300;color:#fff;margin-bottom:8px;line-height:1.2}
+.subject{font-size:.85rem;color:rgba(255,255,255,.3);letter-spacing:.06em}
+
+/* overall score */
+.overall-score{background:linear-gradient(135deg,rgba(155,141,255,.1),rgba(80,60,200,.05));border:1px solid rgba(155,141,255,.2);border-radius:20px;padding:28px 32px;margin-bottom:40px;display:flex;align-items:center;gap:32px}
+.score-circle{width:88px;height:88px;border-radius:50%;background:conic-gradient(#9b8dff 0% 72%, rgba(255,255,255,.07) 72% 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.score-circle::before{content:'';position:absolute;inset:8px;border-radius:50%;background:#0c0c14}
+.score-inner{position:relative;z-index:1;text-align:center}
+.score-num{font-size:1.6rem;font-weight:300;color:#c0b4ff}
+.score-denom{font-size:.7rem;color:rgba(200,190,255,.4)}
+.overall-text h2{font-size:1rem;color:#c0b4ff;margin-bottom:6px;font-weight:400}
+.overall-text p{font-size:.82rem;color:rgba(200,190,255,.5);line-height:1.7}
+
+/* dimension */
+.dimension{margin-bottom:28px}
+.dim-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.dim-name{font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,190,255,.5)}
+.dim-score{font-size:1.1rem;color:#c0b4ff;font-weight:300}
+.dim-score span{font-size:.7rem;color:rgba(200,190,255,.3)}
+.dim-bar-bg{height:4px;background:rgba(255,255,255,.06);border-radius:2px;margin-bottom:14px;overflow:hidden}
+.dim-bar{height:100%;border-radius:2px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.dim-body{font-size:.84rem;color:rgba(200,190,255,.55);line-height:1.8;border-left:2px solid rgba(155,141,255,.15);padding-left:16px}
+.dim-body strong{color:rgba(200,190,255,.85);font-weight:500}
+.dim-body .good{color:#7dd88a}
+.dim-body .fix{color:#f5a55a}
+
+/* fix list */
+.fix-list{background:rgba(245,165,90,.05);border:1px solid rgba(245,165,90,.1);border-radius:16px;padding:24px 28px;margin-top:40px}
+.fix-list h3{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:#f5a55a;margin-bottom:18px}
+.fix-item{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start}
+.fix-priority{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:8px;flex-shrink:0;margin-top:2px}
+.fix-priority.p1{background:rgba(255,100,100,.15);color:#ff8a8a}
+.fix-priority.p2{background:rgba(245,165,90,.15);color:#f5a55a}
+.fix-priority.p3{background:rgba(120,200,120,.12);color:#88d888}
+.fix-text{font-size:.82rem;color:rgba(200,190,255,.55);line-height:1.6}
+.fix-text strong{color:rgba(200,190,255,.85);font-weight:500}
+
+hr{border:none;border-top:1px solid rgba(255,255,255,.05);margin:36px 0}
+.footer{font-size:.7rem;color:rgba(255,255,255,.15);letter-spacing:.08em;text-align:right}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="review-header">
+    <div class="badge">Expert Design Review · 5 Dimensions</div>
+    <h1>Jumping Dachshund<br>Animation</h1>
+    <div class="subject">dachshund-jump.html · Reviewed 2026-04-29</div>
+  </div>
+
+  <!-- OVERALL -->
+  <div class="overall-score">
+    <div class="score-circle">
+      <div class="score-inner">
+        <div class="score-num">7.2</div>
+        <div class="score-denom">/ 10</div>
+      </div>
+    </div>
+    <div class="overall-text">
+      <h2>Solid Character Animation</h2>
+      <p>A charming, loopable illustration with well-composed secondary motion. Strong emotional clarity. Gaps in anatomical coherence and timing polish hold it back from the top tier — addressable in one revision pass.</p>
+    </div>
+  </div>
+
+  <!-- DIM 1 -->
+  <div class="dimension" id="d1">
+    <div class="dim-header">
+      <span class="dim-name">1 · Philosophy Consistency</span>
+      <span class="dim-score">7 <span>/ 10</span></span>
+    </div>
+    <div class="dim-bar-bg"><div class="dim-bar" style="width:70%;background:linear-gradient(90deg,#9b8dff,#c0b4ff)"></div></div>
+    <div class="dim-body">
+      The piece commits to a <strong>warm, illustrative aesthetic</strong> — earthy browns, playful motion, golden sparkles — and maintains it consistently.
+      <br><br>
+      <span class="good">✓</span> Color palette (#c8834a, #fdf6ec) is harmonious and reads immediately as "friendly pet illustration."<br>
+      <span class="good">✓</span> The shadow-pulse correctly mirrors the jump arc, showing intent around physical grounding.<br>
+      <span class="fix">△</span> The sparkles feel tonally adjacent to a videogame reward, slightly at odds with the storybook warmth of the dog. Either commit fully to the playful/gamey register or replace sparkles with floating paw prints or hearts.
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- DIM 2 -->
+  <div class="dimension">
+    <div class="dim-header">
+      <span class="dim-name">2 · Visual Hierarchy</span>
+      <span class="dim-score">8 <span>/ 10</span></span>
+    </div>
+    <div class="dim-bar-bg"><div class="dim-bar" style="width:80%;background:linear-gradient(90deg,#9b8dff,#c0b4ff)"></div></div>
+    <div class="dim-body">
+      The dog is clearly the hero. The gradient background successfully recedes; the ground-ellipse adds depth without competing.<br><br>
+      <span class="good">✓</span> Eye lands first (correctly — it's the lightest value on the darkest area of the face).<br>
+      <span class="good">✓</span> Collar + tag create a mid-tone anchor that breaks the body mass pleasingly.<br>
+      <span class="fix">△</span> The title "Jumping Dachshund!" and subtitle compete with the animation — same vertical axis, similar weight. Consider fading them to 40% opacity after 3s so the animation owns the space.
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- DIM 3 -->
+  <div class="dimension">
+    <div class="dim-header">
+      <span class="dim-name">3 · Detail Execution</span>
+      <span class="dim-score">6 <span>/ 10</span></span>
+    </div>
+    <div class="dim-bar-bg"><div class="dim-bar" style="width:60%;background:linear-gradient(90deg,#f5a55a,#ffcc80)"></div></div>
+    <div class="dim-body">
+      SVG construction is functional but shows shortcuts that a trained eye catches quickly.<br><br>
+      <span class="good">✓</span> Layering order (tail → body → head → ears → legs) is correct z-order for the breed's silhouette.<br>
+      <span class="fix">△</span> <strong>Legs are rectangular stubs</strong> — dachshunds have distinctively short, bowed front legs. A slight outward curve on the front pair would read as anatomically dachshund rather than generic dog.<br>
+      <span class="fix">△</span> <strong>Ear flip direction</strong> is currently "outward" (ear-l rotates negative, ear-r rotates positive). For a forward-facing dog, ears would tilt backward during ascent due to air resistance — swap the rotation signs.<br>
+      <span class="fix">△</span> The body ellipse doesn't squash on landing. Adding a 5% scaleY squeeze (0.95) at the lowest keyframe and a 5% stretchY on peak ascent would add significant life with two lines of CSS.
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- DIM 4 -->
+  <div class="dimension">
+    <div class="dim-header">
+      <span class="dim-name">4 · Functionality / Completeness</span>
+      <span class="dim-score">7 <span>/ 10</span></span>
+    </div>
+    <div class="dim-bar-bg"><div class="dim-bar" style="width:70%;background:linear-gradient(90deg,#9b8dff,#c0b4ff)"></div></div>
+    <div class="dim-body">
+      Runs self-contained in any browser, zero dependencies, sub-2KB — excellent delivery format.<br><br>
+      <span class="good">✓</span> Loopable: all animations use <code>infinite</code> with matching durations (0.72s). No drift.<br>
+      <span class="good">✓</span> Shadow and dog-wrap animations are synchronised correctly — the shadow bottoms-out precisely when the dog lands.<br>
+      <span class="fix">△</span> No <strong>reduced-motion</strong> media query. Users with vestibular disorders may find the continuous bounce triggering. Add <code>@media (prefers-reduced-motion)</code> to pause all animations.<br>
+      <span class="fix">△</span> Sparkle timing (<code>--delay</code>) is fixed — after 5 seconds the pattern becomes perceptible. Randomise on load with a short JS snippet.
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- DIM 5 -->
+  <div class="dimension">
+    <div class="dim-header">
+      <span class="dim-name">5 · Innovation / Delight</span>
+      <span class="dim-score">8 <span>/ 10</span></span>
+    </div>
+    <div class="dim-bar-bg"><div class="dim-bar" style="width:80%;background:linear-gradient(90deg,#7dd88a,#a8f0b0)"></div></div>
+    <div class="dim-body">
+      This is where the piece earns its stars. Most pure-CSS animal animations are static poses; this one commits to <strong>five simultaneous, coordinated secondary motions</strong>: jump arc, ear flap, tail wag, leg compress, shadow scale.<br><br>
+      <span class="good">✓</span> The cubic-bezier(.36,.07,.19,.97) on the jump adds a genuine snap-and-settle that reads as weight.<br>
+      <span class="good">✓</span> Mouth + tongue on the snout read as panting happiness — emotionally successful at a glance.<br>
+      <span class="fix">△</span> Missed opportunity: no <strong>sound design stub</strong>. Even a muted boing.mp3 triggered on the peak of the jump arc (via JS timeout tracking animation iteration) would 10× the delight factor.
+    </div>
+  </div>
+
+  <!-- FIX LIST -->
+  <div class="fix-list">
+    <h3>Prioritised Fix List</h3>
+    <div class="fix-item">
+      <span class="fix-priority p1">P1</span>
+      <div class="fix-text"><strong>Add squash & stretch on landing</strong> — <code>.dog-wrap</code> keyframe at 85%: add <code>scaleX(1.06) scaleY(0.94)</code>, peak at 45%: <code>scaleX(0.95) scaleY(1.05)</code>. ~4 lines of CSS.</div>
+    </div>
+    <div class="fix-item">
+      <span class="fix-priority p1">P1</span>
+      <div class="fix-text"><strong>Flip ear rotation direction</strong> — In <code>@keyframes ear-l</code>, change <code>rotate(-18deg)</code> to <code>rotate(12deg)</code> (backward, not outward). Same for ear-r: <code>18deg → -12deg</code>.</div>
+    </div>
+    <div class="fix-item">
+      <span class="fix-priority p2">P2</span>
+      <div class="fix-text"><strong>Add <code>prefers-reduced-motion</code></strong> — wrap all <code>animation:</code> declarations in <code>@media (prefers-reduced-motion: no-preference)</code> and add a static fallback.</div>
+    </div>
+    <div class="fix-item">
+      <span class="fix-priority p2">P2</span>
+      <div class="fix-text"><strong>Fade title text</strong> — after 2.5s, transition <code>.title</code> and <code>.subtitle</code> opacity to 0.25 so the animation is the sole focus.</div>
+    </div>
+    <div class="fix-item">
+      <span class="fix-priority p3">P3</span>
+      <div class="fix-text"><strong>Curved front legs</strong> — replace the front-leg <code>&lt;rect&gt;</code> elements with <code>&lt;path d="M53,78 Q46,90 50,100"&gt;</code> style paths for the characteristic dachshund bow.</div>
+    </div>
+    <div class="fix-item">
+      <span class="fix-priority p3">P3</span>
+      <div class="fix-text"><strong>Randomise sparkle delays on load</strong> — 5-line JS snippet sets each <code>.spark</code>'s <code>--delay</code> CSS var to <code>Math.random()*1.5</code>s on <code>DOMContentLoaded</code>.</div>
+    </div>
+  </div>
+
+  <div class="footer" style="margin-top:32px">Huashu-Design · 5-Dimension Expert Review · 2026-04-29</div>
+</div>
+<script>
+// Animate bars in on load
+window.addEventListener('load',()=>{
+  document.querySelectorAll('.dim-bar').forEach((b,i)=>{
+    const w=b.style.width;
+    b.style.width='0';
+    setTimeout(()=>{b.style.width=w;},200+i*150);
+  });
+  // animate score circle
+  const sc=document.querySelector('.score-circle');
+  sc.style.background='conic-gradient(#9b8dff 0% 0%, rgba(255,255,255,.07) 0% 100%)';
+  setTimeout(()=>{sc.style.transition='background 1.4s cubic-bezier(.4,0,.2,1)';sc.style.background='conic-gradient(#9b8dff 0% 72%, rgba(255,255,255,.07) 72% 100%)';},300);
+});
+</script>
+</body>
+</html>

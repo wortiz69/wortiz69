@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Neural Network — 60s Animation</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060612;overflow:hidden;width:100vw;height:100vh;font-family:'Georgia',serif;display:flex;align-items:center;justify-content:center}
+canvas{position:absolute;inset:0}
+.hud{position:absolute;top:28px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none}
+.hud-title{font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(120,180,255,.5);margin-bottom:6px}
+.hud-phase{font-size:1.4rem;color:#a0d0ff;font-weight:300;letter-spacing:.06em;min-height:2rem;transition:opacity .5s}
+.hud-iter{font-size:.7rem;color:rgba(120,180,255,.3);margin-top:4px;font-family:monospace;letter-spacing:.1em}
+
+.progress-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.05)}
+.progress-fill{height:100%;background:linear-gradient(90deg,#4488ff,#00e5cc);width:0%;transition:width .1s linear}
+
+.export-btns{position:absolute;bottom:22px;right:22px;display:flex;gap:8px;z-index:20}
+.exp-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);padding:6px 14px;border-radius:8px;font-size:.72rem;cursor:pointer;font-family:monospace;letter-spacing:.08em;transition:all .2s}
+.exp-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.exp-btn:active{transform:scale(.95)}
+
+.loss-panel{position:absolute;top:28px;right:28px;background:rgba(10,10,30,.8);border:1px solid rgba(80,120,255,.15);border-radius:12px;padding:14px 16px;z-index:10;backdrop-filter:blur(8px)}
+.loss-label{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(120,180,255,.4);margin-bottom:6px;font-family:monospace}
+.loss-val{font-size:1.2rem;color:#60aaff;font-family:monospace;font-weight:300}
+.loss-chart{width:100px;height:36px;margin-top:8px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div class="hud">
+  <div class="hud-title">Neural Network · Training Visualisation</div>
+  <div class="hud-phase" id="phase">Initialising…</div>
+  <div class="hud-iter" id="iter">Epoch 0 / 100</div>
+</div>
+
+<div class="loss-panel">
+  <div class="loss-label">Loss</div>
+  <div class="loss-val" id="lossval">2.3042</div>
+  <canvas class="loss-chart" id="lossChart" width="100" height="36"></canvas>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
+
+<div class="export-btns">
+  <button class="exp-btn" onclick="alert('In a full build, Playwright captures frames → ffmpeg renders MP4 at 60fps')">Export MP4</button>
+  <button class="exp-btn" onclick="alert('In a full build, frames are palette-optimised → GIF (25fps, <5MB)')">Export GIF</button>
+</div>
+
+<script>
+const c=document.getElementById('c'),ctx=c.getContext('2d');
+c.width=window.innerWidth;c.height=window.innerHeight;
+const W=c.width,H=c.height;
+
+// ── NETWORK LAYOUT ──
+const layers=[3,5,6,5,3,2];
+const nodes=[];
+const lx=W/2,ly=H/2;
+const layerW=Math.min(580,W*.7);
+const xStart=lx-layerW/2;
+const xStep=layerW/(layers.length-1);
+
+layers.forEach((n,li)=>{
+  const x=xStart+li*xStep;
+  nodes.push([]);
+  for(let ni=0;ni<n;ni++){
+    const y=ly+(ni-(n-1)/2)*72;
+    nodes[li].push({x,y,act:0,target:0,pulse:Math.random()*Math.PI*2});
+  }
+});
+
+// ── SIGNALS ──
+const signals=[];
+function spawnSignal(from,to,val,col){
+  signals.push({x:from.x,y:from.y,tx:to.x,ty:to.y,t:0,val,col,speed:.012+Math.random()*.008});
+}
+
+// ── LOSS HISTORY ──
+const lossHistory=[];
+let lossVal=2.3042;
+
+// ── PHASES (60 seconds total) ──
+const phases=[
+  {t:0,   label:'Initialising weights',  desc:'Random initialisation — Glorot uniform'},
+  {t:4,   label:'Forward pass',           desc:'Input → hidden layers → output'},
+  {t:16,  label:'Computing loss',         desc:'Cross-entropy: L = −Σ yᵢ log(ŷᵢ)'},
+  {t:26,  label:'Backpropagation',        desc:'∂L/∂w — gradients flowing back'},
+  {t:40,  label:'Gradient descent',       desc:'w ← w − η∇L   (η=0.01)'},
+  {t:52,  label:'Converging',             desc:'Loss approaching minimum'},
+  {t:58,  label:'Training complete ✓',    desc:'Test accuracy: 97.3%'},
+];
+
+let startTime=null,epoch=0;
+
+function getPhase(sec){
+  let p=phases[0];
+  for(const ph of phases)if(sec>=ph.t)p=ph;
+  return p;
+}
+
+function drawConnection(a,b,weight,alpha){
+  const g=ctx.createLinearGradient(a.x,a.y,b.x,b.y);
+  const col=weight>0?'80,180,255':'255,100,100';
+  g.addColorStop(0,`rgba(${col},${alpha*.6})`);
+  g.addColorStop(1,`rgba(${col},${alpha*.2})`);
+  ctx.beginPath();
+  ctx.moveTo(a.x,a.y);
+  ctx.lineTo(b.x,b.y);
+  ctx.strokeStyle=g;
+  ctx.lineWidth=Math.abs(weight)*2.5;
+  ctx.stroke();
+}
+
+function drawNode(n,glow,label){
+  const r=16;
+  // glow
+  if(glow>0.1){
+    const g2=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,r*3);
+    g2.addColorStop(0,`rgba(80,160,255,${glow*.3})`);
+    g2.addColorStop(1,'transparent');
+    ctx.fillStyle=g2;
+    ctx.beginPath();ctx.arc(n.x,n.y,r*3,0,Math.PI*2);ctx.fill();
+  }
+  // node
+  const grad=ctx.createRadialGradient(n.x-4,n.y-4,2,n.x,n.y,r);
+  const a=Math.max(.15,n.act);
+  grad.addColorStop(0,`rgba(${100+155*a},${140+80*a},255,${.7+a*.3})`);
+  grad.addColorStop(1,`rgba(30,60,200,${.4+a*.3})`);
+  ctx.beginPath();ctx.arc(n.x,n.y,r,0,Math.PI*2);
+  ctx.fillStyle=grad;ctx.fill();
+  ctx.strokeStyle=`rgba(120,180,255,${.2+a*.4})`;
+  ctx.lineWidth=1.5;ctx.stroke();
+  // activation value
+  if(n.act>0.1){
+    ctx.fillStyle=`rgba(200,230,255,${n.act*.8})`;
+    ctx.font=`${9}px monospace`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(n.act.toFixed(2),n.x,n.y);
+  }
+}
+
+const weights=[];
+for(let li=0;li<layers.length-1;li++){
+  weights.push([]);
+  for(let ni=0;ni<layers[li];ni++){
+    weights[li].push([]);
+    for(let nj=0;nj<layers[li+1];nj++){
+      weights[li][ni].push((Math.random()*2-1)*.8);
+    }
+  }
+}
+
+function drawLossChart(lossCtx,lw,lh){
+  lossCtx.clearRect(0,0,lw,lh);
+  if(lossHistory.length<2)return;
+  lossCtx.beginPath();
+  lossHistory.forEach((v,i)=>{
+    const x=i/(lossHistory.length-1)*lw;
+    const y=lh-(v/2.5)*lh;
+    i===0?lossCtx.moveTo(x,y):lossCtx.lineTo(x,y);
+  });
+  lossCtx.strokeStyle='#60aaff';
+  lossCtx.lineWidth=1.5;
+  lossCtx.stroke();
+  // fill
+  lossCtx.lineTo(lw,lh);lossCtx.lineTo(0,lh);lossCtx.closePath();
+  lossCtx.fillStyle='rgba(96,170,255,.08)';lossCtx.fill();
+}
+
+const lossChartCanvas=document.getElementById('lossChart');
+const lossCtx2=lossChartCanvas.getContext('2d');
+
+let backSignals=[];
+
+function frame(ts){
+  if(!startTime)startTime=ts;
+  const elapsed=(ts-startTime)/1000;
+  const loopSec=elapsed%60;
+  const phase=getPhase(loopSec);
+
+  // update UI
+  document.getElementById('phase').textContent=phase.label;
+  epoch=Math.floor((loopSec/60)*100);
+  document.getElementById('iter').textContent=`Epoch ${epoch} / 100 · ${phase.desc}`;
+  document.getElementById('prog').style.width=(loopSec/60*100)+'%';
+
+  // update loss
+  if(loopSec>4&&loopSec<58){
+    const raw=2.3042*Math.exp(-0.06*epoch)+.04+Math.sin(epoch*.5)*.03;
+    lossVal=Math.max(.05,raw);
+    document.getElementById('lossval').textContent=lossVal.toFixed(4);
+    if(epoch%2===0&&lossHistory.length<50)lossHistory.push(lossVal);
+    else if(epoch%2===0&&lossHistory.length===50){lossHistory.shift();lossHistory.push(lossVal);}
+  }
+  drawLossChart(lossCtx2,100,36);
+
+  // animate node activations
+  nodes.forEach((layer,li)=>{
+    layer.forEach(n=>{
+      n.pulse+=0.04;
+      const base=.2+Math.sin(n.pulse+li*.5)*.15;
+      n.act+=(base-n.act)*.04;
+    });
+  });
+
+  // spawn forward signals
+  if(loopSec>4&&loopSec<26&&Math.random()<.25){
+    const li=Math.floor(Math.random()*(layers.length-1));
+    const from=nodes[li][Math.floor(Math.random()*nodes[li].length)];
+    const to=nodes[li+1][Math.floor(Math.random()*nodes[li+1].length)];
+    signals.push({x:from.x,y:from.y,tx:to.x,ty:to.y,t:0,col:'80,180,255',speed:.014});
+  }
+  // spawn back signals (backprop)
+  if(loopSec>26&&loopSec<45&&Math.random()<.3){
+    const li=Math.floor(Math.random()*(layers.length-1))+1;
+    const from=nodes[li][Math.floor(Math.random()*nodes[li].length)];
+    const to=nodes[li-1][Math.floor(Math.random()*nodes[li-1].length)];
+    signals.push({x:from.x,y:from.y,tx:to.x,ty:to.y,t:0,col:'255,100,120',speed:.014});
+  }
+
+  // ── DRAW ──
+  ctx.clearRect(0,0,W,H);
+
+  // background radial glow
+  const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*.6);
+  bg.addColorStop(0,'rgba(8,10,30,1)');bg.addColorStop(1,'rgba(4,5,15,1)');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // draw connections
+  for(let li=0;li<layers.length-1;li++){
+    for(let ni=0;ni<layers[li];ni++){
+      for(let nj=0;nj<layers[li+1];nj++){
+        const w=weights[li][ni][nj];
+        drawConnection(nodes[li][ni],nodes[li+1][nj],w,.12+Math.abs(w)*.08);
+      }
+    }
+  }
+
+  // update & draw signals
+  for(let i=signals.length-1;i>=0;i--){
+    const s=signals[i];
+    s.t+=s.speed;
+    if(s.t>=1){signals.splice(i,1);continue;}
+    const sx=s.x+(s.tx-s.x)*s.t;
+    const sy=s.y+(s.ty-s.y)*s.t;
+    const g=ctx.createRadialGradient(sx,sy,0,sx,sy,10);
+    g.addColorStop(0,`rgba(${s.col},1)`);
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(sx,sy,10,0,Math.PI*2);ctx.fill();
+    // trail
+    const tx2=s.x+(s.tx-s.x)*Math.max(0,s.t-.12);
+    const ty2=s.y+(s.ty-s.y)*Math.max(0,s.t-.12);
+    ctx.beginPath();ctx.moveTo(tx2,ty2);ctx.lineTo(sx,sy);
+    ctx.strokeStyle=`rgba(${s.col},.4)`;ctx.lineWidth=2;ctx.stroke();
+  }
+
+  // draw nodes
+  nodes.forEach((layer,li)=>{
+    layer.forEach((n,ni)=>{
+      drawNode(n,n.act);
+    });
+  });
+
+  // layer labels
+  const lbls=['Input','Hidden','Hidden','Hidden','Hidden','Output'];
+  nodes.forEach((layer,li)=>{
+    ctx.fillStyle='rgba(120,180,255,.2)';
+    ctx.font='10px monospace';
+    ctx.textAlign='center';
+    ctx.fillText(lbls[li]||'Hidden',layer[0].x,layer[0].y-36);
+  });
+
+  // looping flash on convergence
+  if(loopSec>58){
+    const t=(loopSec-58)/2;
+    ctx.fillStyle=`rgba(80,200,120,${Math.sin(t*Math.PI*4)*.06})`;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.addEventListener('resize',()=>{c.width=window.innerWidth;c.height=window.innerHeight;});
+</script>
+</body>
+</html>
