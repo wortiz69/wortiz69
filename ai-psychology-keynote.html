@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI Psychology — Keynote</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--slide:0;--accent:#6c63ff;--bg:#0a0a14;--fg:#f0eeff}
+body{font-family:'Georgia',serif;background:#111;overflow:hidden;width:100vw;height:100vh;display:flex;flex-direction:column}
+
+/* ── STYLE SWITCHER ── */
+.switcher{display:flex;gap:12px;padding:12px 20px;background:#1a1a2e;border-bottom:1px solid #2a2a4a;justify-content:center;z-index:100}
+.sw-btn{padding:7px 22px;border-radius:20px;border:2px solid transparent;cursor:pointer;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;transition:all .3s;font-family:inherit}
+.sw-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(108,99,255,.08)}
+.sw-btn:not(.active){color:#666;background:transparent}
+.sw-btn:not(.active):hover{color:#aaa;border-color:#444}
+
+/* ── DECK ── */
+.deck{flex:1;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px;opacity:0;transform:translateX(60px);transition:all .55s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.slide.active{opacity:1;transform:none;pointer-events:all}
+.slide.exit{opacity:0;transform:translateX(-60px)}
+
+/* ── NAV ── */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 30px;background:#1a1a2e;border-top:1px solid #2a2a4a}
+.nav-btn{background:none;border:2px solid #444;color:#aaa;padding:8px 24px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:.82rem;transition:all .2s}
+.nav-btn:hover{border-color:#6c63ff;color:#6c63ff}
+.dots{display:flex;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:#333;transition:all .3s;cursor:pointer}
+.dot.on{background:var(--accent);transform:scale(1.3)}
+
+/* ══════════ STYLE A — PENTAGRAM ══════════ */
+body.penta{--accent:#e8c840;--bg:#0d0d0d;--fg:#f5f5f0}
+body.penta .deck,.penta .switcher,.penta .nav{background:#0d0d0d}
+body.penta .switcher,.penta .nav{border-color:#222}
+body.penta .sw-btn:not(.active){color:#555}
+body.penta .dot{background:#333}
+body.penta .dot.on{background:#e8c840}
+
+.penta .slide-0{background:#0d0d0d}
+.penta .kicker{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:#e8c840;margin-bottom:24px}
+.penta .big-title{font-size:clamp(2.2rem,5vw,4.2rem);color:#f5f5f0;line-height:1.1;text-align:center;max-width:820px;font-weight:400}
+.penta .big-title em{font-style:normal;color:#e8c840}
+.penta .subtitle{margin-top:20px;font-size:.9rem;color:#666;letter-spacing:.06em;font-family:monospace}
+.penta .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:100%;max-width:900px;margin-top:32px}
+.penta .card{background:#141414;padding:32px 24px;border-left:2px solid #e8c840}
+.penta .card h3{font-size:1rem;color:#e8c840;margin-bottom:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:400}
+.penta .card p{font-size:.82rem;color:#888;line-height:1.7}
+.penta .divider{width:1px;height:120px;background:#e8c840;opacity:.3;margin:0 auto 32px}
+.penta .quote{font-size:clamp(1.1rem,2.5vw,1.9rem);color:#f5f5f0;text-align:center;max-width:720px;font-style:italic;line-height:1.6}
+.penta .attr{margin-top:18px;font-size:.75rem;color:#555;letter-spacing:.15em;text-transform:uppercase}
+.penta .pillars{display:flex;gap:2px;width:100%;max-width:900px;margin-top:32px}
+.penta .pillar{flex:1;background:#141414;padding:24px 18px;text-align:center}
+.penta .pillar-n{font-size:2.5rem;color:#e8c840;font-weight:300}
+.penta .pillar-l{font-size:.72rem;color:#666;letter-spacing:.1em;text-transform:uppercase;margin-top:8px}
+.penta .cta-box{margin-top:32px;border:1px solid #e8c840;padding:28px 48px;text-align:center}
+.penta .cta-box h2{font-size:1.5rem;color:#f5f5f0;font-weight:400;margin-bottom:10px}
+.penta .cta-box p{font-size:.82rem;color:#666}
+
+/* ══════════ STYLE B — FIELD.IO ══════════ */
+body.field{--accent:#00e5cc;--bg:#050510;--fg:#e0faff}
+body.field .deck,.field .switcher,.field .nav{background:#050510}
+body.field .switcher,.field .nav{border-color:#0a0a30}
+body.field .sw-btn:not(.active){color:#444}
+body.field .dot{background:#0d1a2e}
+body.field .dot.on{background:#00e5cc}
+
+.field .slide{background:#050510}
+.field .kicker{font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;color:#00e5cc;margin-bottom:20px;font-family:monospace}
+.field .big-title{font-size:clamp(2.4rem,5.5vw,4.8rem);color:#e0faff;line-height:1.0;font-weight:300;letter-spacing:-.02em;max-width:900px;text-align:center}
+.field .big-title em{font-style:normal;-webkit-text-stroke:1px #00e5cc;color:transparent}
+.field .subtitle{margin-top:16px;font-size:.78rem;color:#1a4a44;font-family:monospace;letter-spacing:.08em}
+.field .orbs{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.field .orb{position:absolute;border-radius:50%;filter:blur(60px);animation:orb-drift 8s ease-in-out infinite alternate}
+.field .orb1{width:300px;height:300px;background:rgba(0,229,204,.06);top:-80px;right:-60px;animation-delay:0s}
+.field .orb2{width:200px;height:200px;background:rgba(100,0,255,.06);bottom:-40px;left:-40px;animation-delay:2s}
+@keyframes orb-drift{from{transform:translate(0,0)}to{transform:translate(20px,20px)}}
+.field .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;width:100%;max-width:900px;margin-top:28px;background:#0d0d30}
+.field .card{background:#050510;padding:28px 22px}
+.field .card h3{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:#00e5cc;margin-bottom:10px;font-family:monospace}
+.field .card p{font-size:.82rem;color:#4a8a88;line-height:1.7}
+.field .quote{font-size:clamp(1.2rem,2.8vw,2.1rem);color:#e0faff;text-align:center;max-width:780px;font-weight:300;line-height:1.5;letter-spacing:-.01em}
+.field .quote em{font-style:normal;color:#00e5cc}
+.field .wave-line{width:200px;height:2px;background:linear-gradient(90deg,transparent,#00e5cc,transparent);margin:24px auto}
+.field .pillars{display:flex;gap:1px;width:100%;max-width:900px;margin-top:28px;background:#0d0d30}
+.field .pillar{flex:1;background:#050510;padding:24px 18px;text-align:center}
+.field .pillar-n{font-size:2.8rem;color:#00e5cc;font-weight:100;font-family:monospace}
+.field .pillar-l{font-size:.65rem;color:#2a6a66;letter-spacing:.15em;text-transform:uppercase;margin-top:8px;font-family:monospace}
+.field .cta-box{margin-top:28px;border:1px solid #0d2a28;padding:28px 48px;text-align:center;position:relative;overflow:hidden}
+.field .cta-box::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,229,204,.04),transparent)}
+.field .cta-box h2{font-size:1.5rem;color:#e0faff;font-weight:300;margin-bottom:8px}
+.field .cta-box p{font-size:.78rem;color:#2a6a66;font-family:monospace}
+
+/* ══════════ STYLE C — KENYA HARA ══════════ */
+body.hara{--accent:#333;--bg:#fafaf8;--fg:#111}
+body.hara .deck,.hara .switcher,.hara .nav{background:#fafaf8}
+body.hara .switcher,.hara .nav{border-color:#e8e8e4}
+body.hara .sw-btn:not(.active){color:#bbb}
+body.hara .dot{background:#ddd}
+body.hara .dot.on{background:#333}
+body.hara .nav-btn{border-color:#ccc;color:#888}
+body.hara .nav-btn:hover{border-color:#333;color:#333}
+body.hara .sw-btn.active{border-color:#333;color:#333}
+
+.hara .slide{background:#fafaf8}
+.hara .kicker{font-size:.65rem;letter-spacing:.35em;text-transform:uppercase;color:#aaa;margin-bottom:28px}
+.hara .big-title{font-size:clamp(2rem,4.5vw,3.8rem);color:#111;line-height:1.15;font-weight:300;text-align:center;max-width:800px;letter-spacing:-.01em}
+.hara .big-title em{font-style:normal;color:#888}
+.hara .subtitle{margin-top:20px;font-size:.8rem;color:#bbb;letter-spacing:.12em}
+.hara .hl{width:40px;height:1px;background:#ccc;margin:28px auto}
+.hara .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;width:100%;max-width:900px;margin-top:20px}
+.hara .card{padding:24px 0;border-top:1px solid #e0e0dc}
+.hara .card h3{font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:#999;margin-bottom:12px}
+.hara .card p{font-size:.82rem;color:#555;line-height:1.8;font-style:italic}
+.hara .quote{font-size:clamp(1.1rem,2.5vw,1.8rem);color:#222;text-align:center;max-width:700px;font-weight:300;line-height:1.7;font-style:italic}
+.hara .attr{margin-top:20px;font-size:.68rem;color:#bbb;letter-spacing:.2em;text-transform:uppercase}
+.hara .pillars{display:flex;gap:0;width:100%;max-width:800px;margin-top:20px;border-top:1px solid #e0e0dc;border-bottom:1px solid #e0e0dc}
+.hara .pillar{flex:1;padding:28px 18px;text-align:center;border-right:1px solid #e0e0dc}
+.hara .pillar:last-child{border-right:none}
+.hara .pillar-n{font-size:2.4rem;color:#222;font-weight:200}
+.hara .pillar-l{font-size:.65rem;color:#aaa;letter-spacing:.18em;text-transform:uppercase;margin-top:10px}
+.hara .cta-box{margin-top:32px;padding:28px 48px;text-align:center;border:1px solid #e0e0dc}
+.hara .cta-box h2{font-size:1.4rem;color:#222;font-weight:300;margin-bottom:10px}
+.hara .cta-box p{font-size:.78rem;color:#aaa;letter-spacing:.06em}
+
+/* ── SPEAKER NOTES ── */
+.notes-bar{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.85);color:#aaa;font-size:.72rem;padding:8px 24px;transform:translateY(100%);transition:transform .3s;font-family:monospace;z-index:50;backdrop-filter:blur(6px)}
+.notes-bar.show{transform:none}
+.notes-toggle{position:absolute;bottom:58px;right:16px;background:rgba(0,0,0,.5);border:1px solid #333;color:#888;padding:4px 10px;border-radius:10px;font-size:.65rem;cursor:pointer;font-family:monospace;z-index:60;transition:all .2s}
+.notes-toggle:hover{color:#fff}
+</style>
+</head>
+<body class="field">
+
+<div class="switcher">
+  <button class="sw-btn" onclick="setStyle('penta',this)">A · Pentagram</button>
+  <button class="sw-btn active" onclick="setStyle('field',this)">B · Field.io</button>
+  <button class="sw-btn" onclick="setStyle('hara',this)">C · Kenya Hara</button>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 0 — TITLE -->
+  <div class="slide active" id="s0">
+    <div class="orbs field-only"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+    <div class="kicker">Keynote · 2026</div>
+    <h1 class="big-title">AI <em>Psychology</em><br>& the Mind Behind<br>the Machine</h1>
+    <div class="subtitle">The cognitive science of artificial intelligence</div>
+  </div>
+
+  <!-- SLIDE 1 — CONCEPTS GRID -->
+  <div class="slide" id="s1">
+    <div class="kicker">Core Tensions</div>
+    <h2 class="big-title" style="font-size:clamp(1.6rem,3vw,2.6rem)">Three Frameworks That<br>Define AI Cognition</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Alignment</h3>
+        <p>The gap between what we intend and what models optimise for. Goal mis-specification as a psychological failure mode.</p>
+      </div>
+      <div class="card">
+        <h3>Emergence</h3>
+        <p>Capabilities that arise discontinuously at scale — analogous to developmental leaps in human cognition.</p>
+      </div>
+      <div class="card">
+        <h3>Hallucination</h3>
+        <p>Confabulation without shame — models fill gaps with confident fiction, mirroring certain human memory disorders.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — QUOTE -->
+  <div class="slide" id="s2">
+    <div class="orbs field-only"><div class="orb orb1"></div></div>
+    <div class="wave-line field-only"></div>
+    <div class="hl hara-only"></div>
+    <div class="divider penta-only"></div>
+    <p class="quote">"We are not building minds.<br>We are <em>building mirrors</em> —<br>and mirrors reveal their makers."</p>
+    <div class="attr">— On the psychology of large language models</div>
+  </div>
+
+  <!-- SLIDE 3 — STATS -->
+  <div class="slide" id="s3">
+    <div class="kicker">The Numbers</div>
+    <h2 class="big-title" style="font-size:clamp(1.6rem,3vw,2.6rem)">Benchmarks Are Not<br>Intelligence</h2>
+    <div class="pillars">
+      <div class="pillar"><div class="pillar-n">94%</div><div class="pillar-l">MMLU accuracy</div></div>
+      <div class="pillar"><div class="pillar-n">0</div><div class="pillar-l">Self-awareness</div></div>
+      <div class="pillar"><div class="pillar-n">∞</div><div class="pillar-l">Interpretations</div></div>
+      <div class="pillar"><div class="pillar-n">?</div><div class="pillar-l">Consciousness</div></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 — CTA -->
+  <div class="slide" id="s4">
+    <div class="orbs field-only"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+    <div class="kicker">What's Next</div>
+    <div class="cta-box">
+      <h2>Design AI for<br>Psychological Safety</h2>
+      <p>Transparency · Calibration · Consent · Interpretability</p>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<button class="notes-toggle" id="ntog" onclick="toggleNotes()">notes ▲</button>
+<div class="notes-bar" id="nbar">
+  <span id="note-text">Slide 1 of 5 · Press → to advance · N to toggle notes</span>
+</div>
+
+<div class="nav">
+  <button class="nav-btn" onclick="go(-1)">← Prev</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav-btn" onclick="go(1)">Next →</button>
+</div>
+
+<script>
+const notes=["Opening: set the tone — AI is a mirror, not a mind.","Break down the three core frameworks. Pause at Hallucination.","Dramatic pause before quote. Read it slowly.","Stats: challenge the audience to define intelligence.","Close: make the ask concrete — design choices matter."];
+let cur=0,style='field',showNotes=false;
+const N=5;
+
+function buildDots(){
+  const d=document.getElementById('dots');
+  d.innerHTML='';
+  for(let i=0;i<N;i++){const b=document.createElement('div');b.className='dot'+(i===cur?' on':'');b.onclick=()=>goTo(i);d.appendChild(b);}
+}
+function goTo(n){
+  document.getElementById('s'+cur).className='slide exit';
+  setTimeout(()=>{document.getElementById('s'+cur).className='slide';},550);
+  cur=n;
+  document.getElementById('s'+cur).className='slide active';
+  buildDots();
+  document.getElementById('note-text').textContent=`Slide ${cur+1} of ${N} · ${notes[cur]}`;
+  // style-specific show/hide
+  document.querySelectorAll('.orbs').forEach(e=>{e.style.display=style==='field'?'block':'none'});
+  document.querySelectorAll('.wave-line').forEach(e=>{e.style.display=style==='field'?'block':'none'});
+  document.querySelectorAll('.hl').forEach(e=>{e.style.display=style==='hara'?'block':'none'});
+  document.querySelectorAll('.divider').forEach(e=>{e.style.display=style==='penta'?'block':'none'});
+}
+function go(d){goTo(Math.max(0,Math.min(N-1,cur+d)));}
+function setStyle(s,btn){
+  document.querySelectorAll('.sw-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.body.className=s; style=s; goTo(cur);
+}
+function toggleNotes(){
+  showNotes=!showNotes;
+  document.getElementById('nbar').classList.toggle('show',showNotes);
+  document.getElementById('ntog').textContent='notes '+(showNotes?'▼':'▲');
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' ')go(1);
+  if(e.key==='ArrowLeft')go(-1);
+  if(e.key==='n'||e.key==='N')toggleNotes();
+});
+buildDots();
+goTo(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Pomodoro · iOS Prototype</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#1a1a2e;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;color:#fff}
+
+/* ── iPhone Shell ── */
+.phone{position:relative;width:390px;height:844px;background:#000;border-radius:54px;box-shadow:0 0 0 2px #222,0 0 0 4px #111,0 40px 80px rgba(0,0,0,.6);overflow:hidden}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:126px;height:34px;background:#000;border-radius:0 0 20px 20px;z-index:100}
+.status-bar{position:absolute;top:0;left:0;right:0;height:52px;display:flex;align-items:flex-start;justify-content:space-between;padding:14px 28px 0;font-size:15px;font-weight:600;z-index:99}
+.status-time{color:#fff}
+.status-icons{display:flex;gap:6px;align-items:center;color:#fff;font-size:13px}
+.home-indicator{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;background:rgba(255,255,255,.3);border-radius:3px;z-index:99}
+
+/* ── Screens ── */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .42s cubic-bezier(.4,0,.2,1);background:#0f0f1a}
+.screen.active{transform:none}
+.screen.exit-left{transform:translateX(-30%)}
+.screen-content{flex:1;overflow:hidden;padding-top:52px}
+
+/* ── Tab Bar ── */
+.tab-bar{height:83px;background:rgba(15,15,26,.95);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:flex-start;padding-top:8px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 0;opacity:.45;transition:opacity .2s}
+.tab.active-tab{opacity:1}
+.tab-icon{font-size:22px}
+.tab-label{font-size:10px;letter-spacing:.02em}
+
+/* ─────────────────────────── */
+/* SCREEN 0 — TIMER            */
+/* ─────────────────────────── */
+#s0 .screen-content{display:flex;flex-direction:column;align-items:center;padding-top:72px}
+.greeting{font-size:15px;color:rgba(255,255,255,.4);letter-spacing:.04em;margin-bottom:4px}
+.session-label{font-size:13px;color:#ff6b6b;letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:40px}
+
+.ring-wrap{position:relative;width:260px;height:260px;margin-bottom:36px}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:rgba(255,255,255,.07);stroke-width:12}
+.ring-prog{fill:none;stroke:#ff6b6b;stroke-width:12;stroke-linecap:round;stroke-dasharray:691.15;stroke-dashoffset:173;transition:stroke-dashoffset .5s linear}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.time-display{font-size:56px;font-weight:200;letter-spacing:-.02em;color:#fff}
+.time-sub{font-size:12px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-top:4px}
+
+.ctrl-row{display:flex;gap:20px;align-items:center;margin-bottom:28px}
+.btn-skip{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.06);border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.btn-skip:active{background:rgba(255,255,255,.12);transform:scale(.93)}
+.btn-play{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ff6b6b,#ee4d4d);border:none;color:#fff;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(255,107,107,.4);transition:all .2s}
+.btn-play:active{transform:scale(.93);box-shadow:0 4px 12px rgba(255,107,107,.3)}
+
+.pomodoro-dots{display:flex;gap:8px}
+.p-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.15)}
+.p-dot.done{background:#ff6b6b}
+
+/* ─────────────────────────── */
+/* SCREEN 1 — TASKS            */
+/* ─────────────────────────── */
+#s1 .screen-content{padding:72px 0 0;display:flex;flex-direction:column}
+.page-header{padding:0 24px 20px;display:flex;align-items:center;justify-content:space-between}
+.page-title{font-size:28px;font-weight:700;color:#fff}
+.add-btn{width:36px;height:36px;border-radius:50%;background:#ff6b6b;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.add-btn:active{transform:scale(.9)}
+.task-list{flex:1;overflow-y:auto;padding:0 24px;display:flex;flex-direction:column;gap:12px}
+.task-item{background:rgba(255,255,255,.05);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s;border:1px solid rgba(255,255,255,.06)}
+.task-item:active{background:rgba(255,255,255,.09);transform:scale(.98)}
+.task-check{width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;transition:all .3s;flex-shrink:0}
+.task-check.checked{background:#ff6b6b;border-color:#ff6b6b}
+.task-check.checked::after{content:'✓';font-size:13px;color:#fff}
+.task-info{flex:1}
+.task-name{font-size:15px;color:#fff;margin-bottom:3px}
+.task-name.done-text{text-decoration:line-through;opacity:.4}
+.task-meta{font-size:12px;color:rgba(255,255,255,.3);display:flex;gap:10px}
+.task-toms{background:rgba(255,107,107,.15);color:#ff8a8a;border-radius:6px;padding:2px 7px;font-size:11px}
+.task-priority{border-radius:6px;padding:2px 7px;font-size:11px}
+.task-priority.hi{background:rgba(255,200,0,.1);color:#ffd060}
+.task-priority.lo{background:rgba(100,200,100,.1);color:#88d888}
+.section-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:12px 24px 6px}
+
+/* ─────────────────────────── */
+/* SCREEN 2 — STATS            */
+/* ─────────────────────────── */
+#s2 .screen-content{padding:72px 24px 0;display:flex;flex-direction:column;gap:16px}
+.stats-header{font-size:28px;font-weight:700;margin-bottom:4px}
+.stats-sub{font-size:13px;color:rgba(255,255,255,.3)}
+.stat-card{background:rgba(255,255,255,.05);border-radius:20px;padding:20px;border:1px solid rgba(255,255,255,.06)}
+.stat-card-title{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px}
+.stat-big{font-size:42px;font-weight:200;color:#ff6b6b;line-height:1}
+.stat-big-label{font-size:13px;color:rgba(255,255,255,.3);margin-top:4px}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat-mini{background:rgba(255,255,255,.05);border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,.06)}
+.stat-mini-val{font-size:28px;font-weight:300;color:#fff;margin-bottom:2px}
+.stat-mini-label{font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.06em}
+.bar-chart{display:flex;gap:8px;align-items:flex-end;height:80px;margin-top:8px}
+.bar-day{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-fill{width:100%;background:#ff6b6b;border-radius:4px 4px 0 0;transition:height .5s cubic-bezier(.4,0,.2,1)}
+.bar-lbl{font-size:10px;color:rgba(255,255,255,.3)}
+.bar-today .bar-fill{background:linear-gradient(180deg,#ff8a8a,#ff6b6b)}
+
+/* ─────────────────────────── */
+/* SCREEN 3 — SETTINGS         */
+/* ─────────────────────────── */
+#s3 .screen-content{padding:72px 24px 0;overflow-y:auto}
+.settings-header{font-size:28px;font-weight:700;margin-bottom:24px}
+.settings-section{margin-bottom:28px}
+.settings-section-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:10px;padding-left:4px}
+.setting-row{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);border-radius:0;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .15s}
+.setting-row:first-of-type{border-radius:16px 16px 0 0}
+.setting-row:last-of-type{border-radius:0 0 16px 16px}
+.setting-row:only-of-type{border-radius:16px}
+.setting-row+.setting-row{border-top:none}
+.setting-row:active{background:rgba(255,255,255,.09)}
+.setting-label{font-size:15px;color:#fff}
+.setting-value{font-size:15px;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:6px}
+.setting-value .chevron{font-size:12px;opacity:.4}
+.toggle{width:50px;height:30px;background:#ff6b6b;border-radius:15px;position:relative;cursor:pointer;transition:background .2s}
+.toggle.off{background:rgba(255,255,255,.15)}
+.toggle::after{content:'';position:absolute;width:26px;height:26px;background:#fff;border-radius:50%;top:2px;left:22px;transition:left .2s;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+.toggle.off::after{left:2px}
+.stepper{display:flex;align-items:center;gap:10px}
+.step-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.step-btn:active{background:rgba(255,255,255,.2)}
+.step-val{font-size:15px;color:#fff;width:32px;text-align:center}
+
+/* ── Toast ── */
+.toast{position:absolute;bottom:110px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(40,40,60,.95);backdrop-filter:blur(12px);padding:10px 20px;border-radius:20px;font-size:13px;color:#fff;white-space:nowrap;opacity:0;transition:all .3s;pointer-events:none;z-index:200;border:1px solid rgba(255,255,255,.1)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <div class="status-icons">
+      <span>●●●</span>
+      <span>WiFi</span>
+      <span>🔋</span>
+    </div>
+  </div>
+  <div class="home-indicator"></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- ── SCREEN 0: TIMER ── -->
+  <div class="screen active" id="s0">
+    <div class="screen-content">
+      <div class="greeting">Good morning, Alex</div>
+      <div class="session-label">Focus · Session 2 of 4</div>
+      <div class="ring-wrap">
+        <svg width="260" height="260" viewBox="0 0 260 260">
+          <circle class="ring-bg" cx="130" cy="130" r="110"/>
+          <circle class="ring-prog" id="ring" cx="130" cy="130" r="110"/>
+        </svg>
+        <div class="ring-center">
+          <div class="time-display" id="timer">24:59</div>
+          <div class="time-sub">MINUTES LEFT</div>
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <button class="btn-skip" onclick="showToast('Skipped to break')">⏮</button>
+        <button class="btn-play" id="playBtn" onclick="toggleTimer()">▶</button>
+        <button class="btn-skip" onclick="showToast('Session reset')">⏭</button>
+      </div>
+      <div class="pomodoro-dots">
+        <div class="p-dot done"></div>
+        <div class="p-dot done"></div>
+        <div class="p-dot"></div>
+        <div class="p-dot"></div>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab active-tab" onclick="goScreen(0)"><div class="tab-icon">⏱</div><div class="tab-label">Timer</div></div>
+      <div class="tab" onclick="goScreen(1)"><div class="tab-icon">✓</div><div class="tab-label">Tasks</div></div>
+      <div class="tab" onclick="goScreen(2)"><div class="tab-icon">📊</div><div class="tab-label">Stats</div></div>
+      <div class="tab" onclick="goScreen(3)"><div class="tab-icon">⚙️</div><div class="tab-label">Settings</div></div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 1: TASKS ── -->
+  <div class="screen" id="s1">
+    <div class="screen-content">
+      <div class="page-header">
+        <div class="page-title">Tasks</div>
+        <button class="add-btn" onclick="showToast('New task added!')">+</button>
+      </div>
+      <div class="section-label">Today</div>
+      <div class="task-list">
+        <div class="task-item" onclick="toggleTask(this)">
+          <div class="task-check checked"></div>
+          <div class="task-info">
+            <div class="task-name done-text">Review design specs</div>
+            <div class="task-meta"><span class="task-toms">🍅 2</span><span class="task-priority hi">High</span></div>
+          </div>
+        </div>
+        <div class="task-item" onclick="toggleTask(this)">
+          <div class="task-check checked"></div>
+          <div class="task-info">
+            <div class="task-name done-text">Team standup prep</div>
+            <div class="task-meta"><span class="task-toms">🍅 1</span><span class="task-priority lo">Low</span></div>
+          </div>
+        </div>
+        <div class="task-item" onclick="toggleTask(this)">
+          <div class="task-check"></div>
+          <div class="task-info">
+            <div class="task-name">Write API documentation</div>
+            <div class="task-meta"><span class="task-toms">🍅 3</span><span class="task-priority hi">High</span></div>
+          </div>
+        </div>
+        <div class="task-item" onclick="toggleTask(this)">
+          <div class="task-check"></div>
+          <div class="task-info">
+            <div class="task-name">Code review — PR #47</div>
+            <div class="task-meta"><span class="task-toms">🍅 2</span><span class="task-priority lo">Med</span></div>
+          </div>
+        </div>
+        <div class="section-label" style="padding-left:0;padding-top:16px">Tomorrow</div>
+        <div class="task-item" onclick="toggleTask(this)">
+          <div class="task-check"></div>
+          <div class="task-info">
+            <div class="task-name">Quarterly planning deck</div>
+            <div class="task-meta"><span class="task-toms">🍅 4</span><span class="task-priority hi">High</span></div>
+          </div>
+        </div>
+        <div class="task-item" onclick="toggleTask(this)">
+          <div class="task-check"></div>
+          <div class="task-info">
+            <div class="task-name">Refactor auth module</div>
+            <div class="task-meta"><span class="task-toms">🍅 3</span><span class="task-priority lo">Low</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab" onclick="goScreen(0)"><div class="tab-icon">⏱</div><div class="tab-label">Timer</div></div>
+      <div class="tab active-tab" onclick="goScreen(1)"><div class="tab-icon">✓</div><div class="tab-label">Tasks</div></div>
+      <div class="tab" onclick="goScreen(2)"><div class="tab-icon">📊</div><div class="tab-label">Stats</div></div>
+      <div class="tab" onclick="goScreen(3)"><div class="tab-icon">⚙️</div><div class="tab-label">Settings</div></div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 2: STATS ── -->
+  <div class="screen" id="s2">
+    <div class="screen-content">
+      <div class="stats-header">This Week</div>
+      <div class="stats-sub">April 21 – 27, 2026</div>
+      <div class="stat-card">
+        <div class="stat-card-title">Total Focus Time</div>
+        <div class="stat-big">14h 20m</div>
+        <div class="stat-big-label">+2h 10m vs last week</div>
+        <div class="bar-chart">
+          <div class="bar-day"><div class="bar-fill" style="height:40px"></div><div class="bar-lbl">M</div></div>
+          <div class="bar-day"><div class="bar-fill" style="height:60px"></div><div class="bar-lbl">T</div></div>
+          <div class="bar-day"><div class="bar-fill" style="height:50px"></div><div class="bar-lbl">W</div></div>
+          <div class="bar-day"><div class="bar-fill" style="height:65px"></div><div class="bar-lbl">T</div></div>
+          <div class="bar-day bar-today"><div class="bar-fill" style="height:45px"></div><div class="bar-lbl">F</div></div>
+          <div class="bar-day"><div class="bar-fill" style="height:20px;opacity:.3"></div><div class="bar-lbl">S</div></div>
+          <div class="bar-day"><div class="bar-fill" style="height:0px;opacity:.3"></div><div class="bar-lbl">S</div></div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-mini"><div class="stat-mini-val">34</div><div class="stat-mini-label">Pomodoros</div></div>
+        <div class="stat-mini"><div class="stat-mini-val">18</div><div class="stat-mini-label">Tasks Done</div></div>
+        <div class="stat-mini"><div class="stat-mini-val">94%</div><div class="stat-mini-label">Focus Rate</div></div>
+        <div class="stat-mini"><div class="stat-mini-val">5</div><div class="stat-mini-label">Day Streak 🔥</div></div>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab" onclick="goScreen(0)"><div class="tab-icon">⏱</div><div class="tab-label">Timer</div></div>
+      <div class="tab" onclick="goScreen(1)"><div class="tab-icon">✓</div><div class="tab-label">Tasks</div></div>
+      <div class="tab active-tab" onclick="goScreen(2)"><div class="tab-icon">📊</div><div class="tab-label">Stats</div></div>
+      <div class="tab" onclick="goScreen(3)"><div class="tab-icon">⚙️</div><div class="tab-label">Settings</div></div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 3: SETTINGS ── -->
+  <div class="screen" id="s3">
+    <div class="screen-content">
+      <div class="settings-header">Settings</div>
+      <div class="settings-section">
+        <div class="settings-section-label">Timer Durations</div>
+        <div class="setting-row">
+          <span class="setting-label">Focus</span>
+          <div class="stepper">
+            <button class="step-btn" onclick="stepVal('focus',-5)">−</button>
+            <span class="step-val" id="focus-val">25m</span>
+            <button class="step-btn" onclick="stepVal('focus',5)">+</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">Short Break</span>
+          <div class="stepper">
+            <button class="step-btn" onclick="stepVal('short',-1)">−</button>
+            <span class="step-val" id="short-val">5m</span>
+            <button class="step-btn" onclick="stepVal('short',1)">+</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">Long Break</span>
+          <div class="stepper">
+            <button class="step-btn" onclick="stepVal('long',-5)">−</button>
+            <span class="step-val" id="long-val">15m</span>
+            <button class="step-btn" onclick="stepVal('long',5)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-label">Notifications</div>
+        <div class="setting-row">
+          <span class="setting-label">Session End Alert</span>
+          <div class="toggle" onclick="this.classList.toggle('off')"></div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">Break Reminders</span>
+          <div class="toggle off" onclick="this.classList.toggle('off')"></div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">Daily Summary</span>
+          <div class="toggle" onclick="this.classList.toggle('off')"></div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-label">Sound</div>
+        <div class="setting-row">
+          <span class="setting-label">Ambient Sound</span>
+          <div class="setting-value">Rain <span class="chevron">›</span></div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">Tick Sound</span>
+          <div class="toggle off" onclick="this.classList.toggle('off')"></div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-label">Account</div>
+        <div class="setting-row" onclick="showToast('Sync enabled')">
+          <span class="setting-label">iCloud Sync</span>
+          <div class="toggle" onclick="event.stopPropagation();this.classList.toggle('off')"></div>
+        </div>
+        <div class="setting-row" onclick="showToast('Opening subscription…')">
+          <span class="setting-label">Upgrade to Pro</span>
+          <div class="setting-value">🔥 <span class="chevron">›</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab" onclick="goScreen(0)"><div class="tab-icon">⏱</div><div class="tab-label">Timer</div></div>
+      <div class="tab" onclick="goScreen(1)"><div class="tab-icon">✓</div><div class="tab-label">Tasks</div></div>
+      <div class="tab" onclick="goScreen(2)"><div class="tab-icon">📊</div><div class="tab-label">Stats</div></div>
+      <div class="tab active-tab" onclick="goScreen(3)"><div class="tab-icon">⚙️</div><div class="tab-label">Settings</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── NAVIGATION ──
+let cur=0;
+function goScreen(n){
+  if(n===cur)return;
+  const old=document.getElementById('s'+cur);
+  const next=document.getElementById('s'+n);
+  old.classList.remove('active');
+  old.classList.add('exit-left');
+  next.style.transform=n>cur?'translateX(100%)':'translateX(-100%)';
+  next.offsetHeight;
+  next.classList.add('active');
+  setTimeout(()=>{old.classList.remove('exit-left');},420);
+  cur=n;
+}
+
+// ── TIMER ──
+let secs=24*60+59,running=false,interval=null;
+function toggleTimer(){
+  running=!running;
+  document.getElementById('playBtn').textContent=running?'⏸':'▶';
+  if(running)interval=setInterval(tick,1000);
+  else clearInterval(interval);
+}
+function tick(){
+  if(secs<=0){clearInterval(interval);running=false;document.getElementById('playBtn').textContent='▶';showToast('Session complete! 🎉');return;}
+  secs--;
+  const m=Math.floor(secs/60),s=secs%60;
+  document.getElementById('timer').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const total=25*60,pct=1-(secs/total);
+  const circ=691.15,offset=circ*(1-pct);
+  document.getElementById('ring').style.strokeDashoffset=offset;
+}
+
+// ── TASKS ──
+function toggleTask(el){
+  const chk=el.querySelector('.task-check');
+  const name=el.querySelector('.task-name');
+  chk.classList.toggle('checked');
+  name.classList.toggle('done-text');
+  showToast(chk.classList.contains('checked')?'Task completed ✓':'Task reopened');
+}
+
+// ── STEPPER ──
+const vals={focus:25,short:5,long:15};
+const mins={focus:5,short:1,long:5},maxs={focus:60,short:15,long:45};
+function stepVal(k,d){
+  vals[k]=Math.max(mins[k],Math.min(maxs[k],vals[k]+d));
+  document.getElementById(k+'-val').textContent=vals[k]+'m';
+}
+
+// ── TOAST ──
+let toastTO=null;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTO);
+  toastTO=setTimeout(()=>t.classList.remove('show'),1800);
+}
+</script>
+</body>
+</html>
